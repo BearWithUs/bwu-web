@@ -1,25 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faDiscord, faTwitter } from '@fortawesome/free-brands-svg-icons';
+
+import logo from '../img/logo.png'
 
 function Body() {
-    const [state, setState] = useState({
-        account: "",
-        isConnected: false,
-        isSoldOut: false,
-        hasFreeMint: false,
-        isLoading: false,
-        isDisabled: false,
-    })
-
-    // state updater
-    const _setState = (name, value) => {
-        setState(prevState => ({ ...prevState, [name]: value }))
-    }
-
     return (
-        <section className="relative p-2 max-w-7xl mx-auto xl:px-0 mt-12 md:mt-20 lg:mt-24">
-            <div className="flex flex-wrap justify-center items-center">
+        // <section className="relative p-2 max-w-7xl mx-auto xl:px-0 mt-12 md:mt-20 lg:mt-24">
+        //     <div className="flex flex-wrap justify-center items-center">
+        <section className="relative px-2 max-w-7xl mx-auto xl:px-0 h-full py-14 lg:py-0">
+            <div className="flex flex-wrap justify-center items-center h-full">
                 <div className="w-full lg:w-1/2 text-center">
                     <div className="px-3 sm:px-10 md:px-20 lg:px-0">
                         <p className="text-[#6a3722] text-stroke text-3xl mb-5">You Found Us!</p>
@@ -31,16 +21,22 @@ function Body() {
                 </div>
                 <div className="w-full my-10 lg:w-1/2 text-center">
                     <div className="w-full px-3 sm:px-10 md:w-5/6 md:mx-auto md:px-0">
-                        {!state.isConnected ? (
-                            <>
-                                <p className="text-gray-50 text-md text-center mb-5">Connect your wallet to proceed</p>
-                                <button className="rounded-full teenage bg-[#fac102] text-white text-[22px] mx-auto py-2 px-3 w-[250px] transition duration-300 on-hover on-disabled" disabled={state.isDisabled}>
-                                    {state.isLoading ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "Connect Wallet"}
-                                </button>
-                            </>
-                        ) : (
-                            <div></div>
-                        )}
+                        <div className="w-[50%] mx-auto">
+                            <img src={logo} alt="Bear With Us Logo" className="w-full" />
+                        </div>
+                        <p className="teenage text-gray-50 text-4xl text-center mb-5">Minting very soon!</p>
+                        <div className="flex flex-row justify-center gap-14">
+                            <div className="w-8">
+                                <a href="https://discord.gg/BfnfTjVetq">
+                                    <FontAwesomeIcon icon={faDiscord} className="text-gray-50 text-4xl" />
+                                </a>
+                            </div>
+                            <div className="w-8">
+                                <a href="https://twitter.com/bearwithuswtf">
+                                    <FontAwesomeIcon icon={faTwitter} className="text-gray-50 text-4xl" />
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

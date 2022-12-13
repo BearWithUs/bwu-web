@@ -15,7 +15,7 @@ function Navbar() {
                 </div>
                 <div className="flex flex-row justify-center gap-8">
                     <div className="w-8">
-                        <a href="https://discord.com">
+                        <a href="https://discord.gg/BfnfTjVetq">
                             <img src={discord} alt="Discord" className="w-100" />
                         </a>
                     </div>
