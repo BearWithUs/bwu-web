@@ -1,7 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url(fonts.css);
+
+@layer components {
+    .on-disabled {
+        @apply disabled:opacity-95 disabled:cursor-not-allowed disabled:hover:bg-[#fac102]
+    }
+
+    .on-hover {
+        @apply hover:bg-[#fac71b]
+    }
+}
 
 :root {
     font-family: Aine;
+}
+
+.text-stroke {
+    -webkit-text-stroke: 3px #fac102;
 }

@@ -6,3 +6,20 @@
     font-style: normal;
     font-display: swap;
 }
+
+.aine {
+    font-family: 'Aine';
+}
+
+@font-face {
+    font-family: 'Teenage Angst';
+    src: url('fonts/Teenageangst.woff2') format('woff2'),
+        url('fonts/Teenageangst.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+.teenage {
+    font-family: 'Teenage Angst';
+}
