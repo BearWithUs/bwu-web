@@ -6,7 +6,7 @@ import logo from '../img/logo.png'
 
 function Navbar() {
     return (
-        <header className="top-0 z-20 border-b border-b-gray-50 w-full">
+        <header className="absolute top-0 z-20 border-b border-b-gray-50 w-full">
             <div className="flex flex-row justify-between items-center p-2 max-w-7xl mx-auto xl:px-0">
                 <div className="w-24">
                     <a href="/">
