@@ -11,6 +11,10 @@
     .on-hover {
         @apply hover:bg-[#fac71b]
     }
+
+    .bwu-overlay {
+        @apply absolute w-full h-full lg:h-screen bg-black opacity-10
+    }
 }
 
 :root {
