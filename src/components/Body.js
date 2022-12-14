@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { faExternalLinkAlt, faSpinner } from '@fortawesome/free-solid-svg-icons'
 
 import connectToMetaMask from '../utils/connectToMM'
 import { configureWeb3 } from '../utils/web3'
@@ -18,11 +18,13 @@ import bwu from '../img/bwu.gif'
 function Body() {
     const [state, setState] = useState({
         account: "",
-        isConnected: false,
+        isConnected: true,
         isSoldOut: false,
         hasFreeMint: false,
         isLoading: false,
         isDisabled: false,
+        isPlusDisabled: false,
+        isMinusDisabled: false,
         isError: false,
         txHash: "",
         outputMsg: "",
@@ -50,9 +52,18 @@ function Body() {
                         <p className="teenage text-gray-50 text-[22px] text-center mb-3">If you are here, you found us in the vast forest. Welcome to the camp!</p>
                         <p className="teenage text-gray-50 text-[22px] text-center mb-3">This 999 sleuth of bears has come to gather in this camp to bring back the FUN in the NFT space in this BEAR MARKET.  We just missed chatting, chilling, hibernating, and having fun with the amazing people in the world.</p>
                         <p className="teenage text-gray-50 text-[22px] text-center mb-3">If you join us, there will be nothing to expect from you, we won't promise anything either. No strings attached. We are all just here to have fun and enjoy the community. In the forest, there always be uncertainties, and that is what makes it thrilling. It's up to you to follow your own trail. If you lose anything, we won't be responsible for it.</p>
-                        <p className="teenage text-gray-50 text-[22px] text-center mb-3">So, <span className="aine text-sm">BEAR WITH US!</span></p>
+                        <p className="teenage text-gray-50 text-[22px] text-center mb-1">So, <span className="aine text-sm">BEAR WITH US!</span></p>
 
-                        <a href={`https://goerli.etherscan.io/address/${bwuAddress}`}></a>
+                        <div className="mb-8">
+                            <a
+                                href={`https://goerli.etherscan.io/address/${bwuAddress}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="teenage text-gray-50 text-md underline hover:text-color-orange"
+                            >
+                                <FontAwesomeIcon icon={faExternalLinkAlt} className="text-sm" /> View Smart Contract
+                            </a>
+                        </div>
 
                         <div className="flex flex-row justify-center gap-8">
                             <div className="w-8">
@@ -79,7 +90,7 @@ function Body() {
                                     <img src={logo} alt="Bear With Us Logo" className="w-full" />
                                 </div>
                                 <p className="text-gray-50 text-md text-center mb-5">Connect your wallet to proceed</p>
-                                <button className="btn-1 teenage on-hover on-disabled" disabled={state.isDisabled}>
+                                <button className="btn-1 w-[250px] mx-auto rounded-full teenage on-hover on-disabled" disabled={state.isDisabled}>
                                     {state.isLoading ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "Connect Wallet"}
                                 </button>
                             </>
@@ -89,10 +100,23 @@ function Body() {
                                     <img src={logo} alt="Bear With Us Logo" className="w-full" />
                                 </div>
                                 <div className="bg-gray-50 border-8 border-[#fac102] rounded-2xl px-4 pt-9 pb-4 w-full sm:w-4/5 md:w-2/3 lg:w-full xl:w-5/6 sm:mx-auto -mt-14">
-                                    <div className="mb-3">
-                                        <p className="text-color-brown text-xl mb-1">Mint Price: 0.003 ETH*</p>
+                                    <div className="mb-6">
+                                        <p className="text-color-brown text-lg mb-1">Mint Price: 0.003 ETH*</p>
                                         <p className="text-color-orange text-sm">100/999 Minted!</p>
                                     </div>
+                                    <div className="mb-3">
+                                        <p className="teenage text-color-brown text-[20px]">Max. mint per transaction: 3</p>
+                                        <p className="teenage text-color-brown text-[20px]">NFT Limit per Address: 9</p>
+                                    </div>
+                                    <div className="flex justify-center items-center mb-3 gap-2">
+                                        <button className="w-14 btn-1 rounded-md on-hover on-disabled" disabled={state.isPlusDisabled || state.isDisabled}>-</button>
+                                        <div className="border-2 border-[#6a3722] grow text-[25px] py-1 px-3 rounded-md">1</div>
+                                        <button className="w-14 btn-1 rounded-md on-hover on-disabled" disabled={state.isPlusDisabled || state.isDisabled}>+</button>
+                                    </div>
+                                    <button className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={state.isDisabled}>
+                                        {state.isLoading ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "MINT NOW!"}
+                                    </button>
+                                    <p className="teenage text-color-orange text-md">*Gas Fee not included</p>
                                 </div>
                             </>
                         )}

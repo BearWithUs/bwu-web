@@ -17,7 +17,7 @@
     }
 
     .btn-1 {
-        @apply rounded-full bg-[#fac102] text-white text-[22px] mx-auto py-2 px-3 w-[250px] transition duration-300 
+        @apply bg-[#fac102] text-white text-[22px] py-2 px-3 transition duration-300 
     }
 
     .text-color-brown {
