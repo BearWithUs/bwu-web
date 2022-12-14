@@ -19,6 +19,14 @@
     .btn-1 {
         @apply rounded-full bg-[#fac102] text-white text-[22px] mx-auto py-2 px-3 w-[250px] transition duration-300 
     }
+
+    .text-color-brown {
+        @apply text-[#6a3722]
+    }
+
+    .text-color-orange {
+        @apply text-[#fac102]
+    }
 }
 
 :root {
