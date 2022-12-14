@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.css": "/static/css/main.95ce5a2e.css",
+    "main.js": "/static/js/main.62ba6525.js",
+    "static/media/banner.jpg": "/static/media/banner.66c2cc908dd1f49e186c.jpg",
+    "static/media/bwu.gif": "/static/media/bwu.717ed92bfb1f784686cc.gif",
+    "static/media/logo.png": "/static/media/logo.57b36be4da7048fe5943.png",
+    "static/media/Teenageangst.woff": "/static/media/Teenageangst.a69117bb3b3e89b63fc9.woff",
+    "static/media/Teenageangst.woff2": "/static/media/Teenageangst.4228074025b2e9f39ec2.woff2",
+    "static/media/Aine.woff": "/static/media/Aine.bb02d20b333c4f34b762.woff",
+    "static/media/Aine.woff2": "/static/media/Aine.f0ff23a0285da7f1daf4.woff2",
+    "index.html": "/index.html",
+    "main.95ce5a2e.css.map": "/static/css/main.95ce5a2e.css.map",
+    "main.62ba6525.js.map": "/static/js/main.62ba6525.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.95ce5a2e.css",
+    "static/js/main.62ba6525.js"
+  ]
+}
