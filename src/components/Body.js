@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+
+import connectToMetaMask from '../utils/connectToMM'
+import { configureWeb3 } from '../utils/web3'
+
+// PRODUCTION
+// import { bwuAbi, bwuAddress } from '../utils/contractMain' 
+// DEVELOPMENT
+import { bwuAbi, bwuAddress } from '../utils/contractDev'
 
 import discord from '../img/discord-icon.png'
 import twitter from '../img/twitter-icon.png'
@@ -15,7 +23,18 @@ function Body() {
         hasFreeMint: false,
         isLoading: false,
         isDisabled: false,
+        isError: false,
+        txHash: "",
+        outputMsg: "",
     })
+
+    // Other Variables
+    // PRODUCTION
+    // const explorerUrl = "https://etherscan.io/tx/"
+    // const openSeaUrl = "https://opensea.io/assets/ethereum/"
+    // DEVELOPMENT
+    const explorerUrl = "https://goerli.etherscan.io/tx/"
+    const openSeaUrl = "https://testnets.opensea.io/assets/goerli/"
 
     // state updater
     const _setState = (name, value) => {
@@ -32,6 +51,8 @@ function Body() {
                         <p className="teenage text-gray-50 text-[22px] text-center mb-3">This 999 sleuth of bears has come to gather in this camp to bring back the FUN in the NFT space in this BEAR MARKET.  We just missed chatting, chilling, hibernating, and having fun with the amazing people in the world.</p>
                         <p className="teenage text-gray-50 text-[22px] text-center mb-3">If you join us, there will be nothing to expect from you, we won't promise anything either. No strings attached. We are all just here to have fun and enjoy the community. In the forest, there always be uncertainties, and that is what makes it thrilling. It's up to you to follow your own trail. If you lose anything, we won't be responsible for it.</p>
                         <p className="teenage text-gray-50 text-[22px] text-center mb-3">So, <span className="aine text-sm">BEAR WITH US!</span></p>
+
+                        <a href={`https://goerli.etherscan.io/address/${bwuAddress}`}></a>
 
                         <div className="flex flex-row justify-center gap-8">
                             <div className="w-8">
