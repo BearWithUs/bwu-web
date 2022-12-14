@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDiscord, faTwitter } from '@fortawesome/free-brands-svg-icons';
 
 import logo from '../img/logo.png'
+import bwu from '../img/bwu.gif'
 
 function Body() {
     return (
@@ -21,7 +22,10 @@ function Body() {
                 </div>
                 <div className="w-full my-10 lg:w-1/2 text-center">
                     <div className="w-full px-3 sm:px-10 md:w-5/6 md:mx-auto md:px-0">
-                        <div className="w-[50%] mx-auto">
+                        <div className="w-[280px] mx-auto">
+                            <img src={bwu} alt="Bear With Us GIF" className="w-full" />
+                        </div>
+                        <div className="w-[260px] mx-auto -mt-[52px]">
                             <img src={logo} alt="Bear With Us Logo" className="w-full" />
                         </div>
                         <p className="teenage text-gray-50 text-4xl text-center mb-5">Minting very soon!</p>
