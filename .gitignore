@@ -10,7 +10,7 @@
 
 # production
 /build
-/src/utils
+/src/utils/
 
 # misc
 .DS_Store
