@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Body from './components/Body'
 
 import banner from './img/banner.jpg'

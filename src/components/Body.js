@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faExternalLinkAlt, faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { faExternalLinkAlt, faSpinner, faTimes } from '@fortawesome/free-solid-svg-icons'
 
 import connectToMetaMask from '../utils/connectToMM'
 import { configureWeb3 } from '../utils/web3'
@@ -16,6 +16,7 @@ import logo from '../img/logo.png'
 import bwu from '../img/bwu.gif'
 
 function Body() {
+    const [displayAlertGeneral, setDisplayAlertGeneral] = useState(true)
     const [state, setState] = useState({
         account: "",
         isConnected: true,
@@ -29,8 +30,10 @@ function Body() {
         isDisabledFree: false,
         isPlusDisabled: false,
         isMinusDisabled: false,
-        isError: true,
+        showButtons: false,
+        isError: false,
         txHash: "",
+        lastTokenId: 0,
         outputMsg: "",
     })
 
@@ -46,6 +49,10 @@ function Body() {
     const _setState = (name, value) => {
         setState(prevState => ({ ...prevState, [name]: value }))
     }
+
+    // alerts
+    const handleHideShowAlertGeneral = () => setDisplayAlertGeneral(false);
+    const handleShowAlertGeneral = () => setDisplayAlertGeneral(true);
 
     return (
         <section className="relative px-2 max-w-7xl mx-auto xl:px-0 h-full py-14 lg:py-0">
@@ -104,6 +111,37 @@ function Body() {
                                     <img src={logo} alt="Bear With Us Logo" className="w-full" />
                                 </div>
                                 <div className="bg-gray-50 border-8 border-[#fac102] rounded-2xl px-4 pt-9 pb-4 w-full sm:w-4/5 md:w-2/3 lg:w-full xl:w-5/6 sm:mx-auto -mt-14">
+                                    {/* alert */}
+                                    {displayAlertGeneral && (
+                                        <div className={`mb-3 ${state.isError ? "alert-error" : "alert-success"}`}>
+                                            <div className="flex justify-between items-start gap-4">
+                                                <p className="teenage text-lg leading-5 text-white">This is a sample content spanning through a long line to test the alignment of the items</p>
+                                                <button onClick={handleHideShowAlertGeneral} className="teenage text-white">
+                                                    <FontAwesomeIcon icon={faTimes} />
+                                                </button>
+                                            </div>
+                                            {state.showButtons && (
+                                                <div className="flex justify-start gap-3 mt-1">
+                                                    <a href={explorerUrl + state.txHash}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="teenage text-white underline hover:text-color-orange"
+                                                    >
+                                                        View on EtherScan
+                                                    </a>
+                                                    <a href={openSeaUrl + bwuAddress + "/" + state.lastTokenId}
+                                                        target="_blank"
+                                                        rel="noreferrer"
+                                                        className="teenage text-white underline hover:text-color-orange"
+                                                    >
+                                                        View on OpenSea
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {/* end alert */}
+
                                     <div className="mb-6">
                                         <p className="text-color-brown text-lg mb-1">Mint Price: 0.003 ETH*</p>
                                         <p className="text-color-orange text-sm">100/999 Minted!</p>
@@ -125,7 +163,7 @@ function Body() {
                                             {state.isLoadingFree ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "MINT FREE NFT"}
                                         </button>
                                     </div>
-                                    <p className="teenage text-color-orange text-md">*Gas Fee not included</p>
+                                    <p className="teenage text-color-orange text-md">*Mint price doesn't include the gas fee</p>
                                 </div>
                             </>
                         )}
