@@ -5,7 +5,7 @@
 
 @layer components {
     .on-disabled {
-        @apply disabled:opacity-95 disabled:cursor-not-allowed disabled:hover:bg-[#fac102]
+        @apply disabled:opacity-75 disabled:cursor-not-allowed disabled:hover:bg-[#fac102]
     }
 
     .on-hover {

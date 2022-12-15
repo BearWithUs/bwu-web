@@ -22,10 +22,14 @@ function Body() {
         isSoldOut: false,
         hasFreeMint: false,
         isLoading: false,
+        isLoadingMint: false,
+        isLoadingFree: false,
         isDisabled: false,
+        isDisabledMint: false,
+        isDisabledFree: false,
         isPlusDisabled: false,
         isMinusDisabled: false,
-        isError: false,
+        isError: true,
         txHash: "",
         outputMsg: "",
     })
@@ -110,12 +114,17 @@ function Body() {
                                     </div>
                                     <div className="flex justify-center items-center mb-3 gap-2">
                                         <button className="w-14 btn-1 rounded-md on-hover on-disabled" disabled={state.isPlusDisabled || state.isDisabled}>-</button>
-                                        <div className="border-2 border-[#6a3722] grow text-[25px] py-1 px-3 rounded-md">1</div>
+                                        <div id="qtyToMint" className="border-2 border-[#6a3722] grow text-[25px] py-1 px-3 rounded-md">1</div>
                                         <button className="w-14 btn-1 rounded-md on-hover on-disabled" disabled={state.isPlusDisabled || state.isDisabled}>+</button>
                                     </div>
-                                    <button className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={state.isDisabled}>
-                                        {state.isLoading ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "MINT NOW!"}
-                                    </button>
+                                    <div className="flex gap-3">
+                                        <button className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={state.isDisabledMint}>
+                                            {state.isLoadingMint ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "MINT NOW!"}
+                                        </button>
+                                        <button className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={!state.hasFreeMint || state.isDisabledFree}>
+                                            {state.isLoadingFree ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "MINT FREE NFT"}
+                                        </button>
+                                    </div>
                                     <p className="teenage text-color-orange text-md">*Gas Fee not included</p>
                                 </div>
                             </>
