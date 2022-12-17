@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExternalLinkAlt, faSpinner, faTimes } from '@fortawesome/free-solid-svg-icons'
+import { isMobile } from 'react-device-detect'
 
 import connectToMetaMask from '../utils/connectToMM'
 import { configureWeb3 } from '../utils/web3'
@@ -16,10 +17,12 @@ import logo from '../img/logo.png'
 import bwu from '../img/bwu.gif'
 
 function Body() {
-    const [displayAlertGeneral, setDisplayAlertGeneral] = useState(true)
+    const [web3, setWeb3] = useState([])
+    const [contract, setContract] = useState([])
+    const [displayAlertGeneral, setDisplayAlertGeneral] = useState(false)
     const [state, setState] = useState({
         account: "",
-        isConnected: true,
+        isConnected: false,
         isSoldOut: false,
         hasFreeMint: false,
         isLoading: false,
@@ -53,6 +56,48 @@ function Body() {
     // alerts
     const handleHideShowAlertGeneral = () => setDisplayAlertGeneral(false);
     const handleShowAlertGeneral = () => setDisplayAlertGeneral(true);
+
+    // functions
+    const _connect = async () => {
+        _setState("isLoading", true)
+        _setState("isDisabled", true)
+
+        const web3 = configureWeb3()
+        if (web3 !== 1) {
+            setWeb3(web3)
+
+            const contract = new web3.eth.Contract(bwuAbi, bwuAddress)
+            setContract(contract)
+
+            const userAcct = await connectToMetaMask()
+            if (userAcct) {
+                console.log(userAcct)
+                _setState("account", userAcct)
+                _setState("isConnected", true)
+
+                _init(web3, contract, userAcct)
+            } else {
+                _setState("isLoading", false)
+                _setState("outputMsg", "You do not have a connected wallet address. Please try again.")
+                handleShowAlertGeneral()
+            }
+
+            _setState("isLoading", false)
+            _setState("isDisabled", false)
+        } else {
+            _setState("isError", true);
+            (isMobile) ? _setState("outputMsg", "Please use the in-app browser of MetaMask app on your device to mint.") : _setState("outputMsg", "No MetaMask detected. Please install Metamask extension on your browser to proceed.")
+            handleShowAlertGeneral()
+
+            _setState("isLoading", false)
+            _setState("isDisabled", false)
+        }
+    }
+
+    const _init = async (web3, contract, addr) => {
+        // check if the account has free mint
+
+    }
 
     return (
         <section className="relative px-2 max-w-7xl mx-auto xl:px-0 h-full py-14 lg:py-0">
@@ -100,8 +145,39 @@ function Body() {
                                 <div className="w-[260px] mx-auto -mt-[52px]">
                                     <img src={logo} alt="Bear With Us Logo" className="w-full" />
                                 </div>
+                                {/* alert */}
+                                {displayAlertGeneral && (
+                                    <div className={`mb-3 ${state.isError ? "alert-error" : "alert-success"}`}>
+                                        <div className="flex justify-between items-start gap-4">
+                                            <p className="teenage text-lg leading-5 text-white">{state.outputMsg}</p>
+                                            <button onClick={handleHideShowAlertGeneral} className="teenage text-white">
+                                                <FontAwesomeIcon icon={faTimes} />
+                                            </button>
+                                        </div>
+                                        {state.showButtons && (
+                                            <div className="flex justify-start gap-3 mt-1">
+                                                <a href={explorerUrl + state.txHash}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="teenage text-white underline hover:text-color-orange"
+                                                >
+                                                    View on EtherScan
+                                                </a>
+                                                <a href={openSeaUrl + bwuAddress + "/" + state.lastTokenId}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="teenage text-white underline hover:text-color-orange"
+                                                >
+                                                    View on OpenSea
+                                                </a>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                {/* end alert */}
                                 <p className="text-gray-50 text-md text-center mb-5">Connect your wallet to proceed</p>
-                                <button className="btn-1 w-[250px] mx-auto rounded-full teenage on-hover on-disabled" disabled={state.isDisabled}>
+                                
+                                <button onClick={_connect} className="btn-1 w-[250px] mx-auto rounded-full teenage on-hover on-disabled" disabled={state.isDisabled}>
                                     {state.isLoading ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "Connect Wallet"}
                                 </button>
                             </>
@@ -115,7 +191,7 @@ function Body() {
                                     {displayAlertGeneral && (
                                         <div className={`mb-3 ${state.isError ? "alert-error" : "alert-success"}`}>
                                             <div className="flex justify-between items-start gap-4">
-                                                <p className="teenage text-lg leading-5 text-white">This is a sample content spanning through a long line to test the alignment of the items</p>
+                                                <p className="teenage text-lg leading-5 text-white">{state.outputMsg}</p>
                                                 <button onClick={handleHideShowAlertGeneral} className="teenage text-white">
                                                     <FontAwesomeIcon icon={faTimes} />
                                                 </button>
@@ -151,7 +227,7 @@ function Body() {
                                         <p className="teenage text-color-brown text-[20px]">NFT Limit per Address: 9</p>
                                     </div>
                                     <div className="flex justify-center items-center mb-3 gap-2">
-                                        <button className="w-14 btn-1 rounded-md on-hover on-disabled" disabled={state.isPlusDisabled || state.isDisabled}>-</button>
+                                        <button className="w-14 btn-1 rounded-md on-hover on-disabled" disabled={state.isMinusDisabled || state.isDisabled}>-</button>
                                         <div id="qtyToMint" className="border-2 border-[#6a3722] grow text-[25px] py-1 px-3 rounded-md">1</div>
                                         <button className="w-14 btn-1 rounded-md on-hover on-disabled" disabled={state.isPlusDisabled || state.isDisabled}>+</button>
                                     </div>
