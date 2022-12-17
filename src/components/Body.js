@@ -35,6 +35,9 @@ function Body() {
         isMinusDisabled: false,
         showButtons: false,
         isError: false,
+        maxMintPerTx: 0,
+        maxNftPerAddr: 0,
+        totalSupply: 0,
         txHash: "",
         lastTokenId: 0,
         outputMsg: "",
@@ -71,19 +74,14 @@ function Body() {
 
             const userAcct = await connectToMetaMask()
             if (userAcct) {
-                console.log(userAcct)
-                _setState("account", userAcct)
-                _setState("isConnected", true)
-
                 _init(web3, contract, userAcct)
+                _setState("account", userAcct)
             } else {
-                _setState("isLoading", false)
                 _setState("outputMsg", "You do not have a connected wallet address. Please try again.")
                 handleShowAlertGeneral()
+                _setState("isLoading", false)
+                _setState("isDisabled", false)
             }
-
-            _setState("isLoading", false)
-            _setState("isDisabled", false)
         } else {
             _setState("isError", true);
             (isMobile) ? _setState("outputMsg", "Please use the in-app browser of MetaMask app on your device to mint.") : _setState("outputMsg", "No MetaMask detected. Please install Metamask extension on your browser to proceed.")
@@ -94,9 +92,29 @@ function Body() {
         }
     }
 
-    const _init = async (web3, contract, addr) => {
+    const _init = async (w3, cont, acct) => {
         // check if the account has free mint
+        const checkFreeMint = await cont.methods.isFreeMint(acct).call()
+        if (checkFreeMint) {
+            _setState("hasFreeMint", true)
+            _setState("isError", false)
+            _setState("outputMsg", "Congratulations! You have a FREE BWU NFT MINT! Please click the \"MINT FREE NFT\" button below")
+            handleShowAlertGeneral()
+        }
 
+        // get the details for the mint
+        const maxMintQty = await cont.methods.maxMintQuantity().call()
+        _setState("maxMintPerTx", maxMintQty)
+
+        const nftAddressLimit = await cont.methods.nftPerAddressLimit().call()
+        _setState("maxNftPerAddr", nftAddressLimit)
+
+        const totalSupply = await cont.methods.totalSupply().call()
+        _setState("totalSupply", totalSupply)
+
+        _setState("isLoading", false)
+        _setState("isDisabled", false)
+        _setState("isConnected", true)
     }
 
     return (
