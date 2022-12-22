@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExternalLinkAlt, faSpinner, faTimes } from '@fortawesome/free-solid-svg-icons'
 import { isMobile } from 'react-device-detect'
+import numberFormat from '../utils/numberFormat'
 
 import connectToMetaMask from '../utils/connectToMM'
 import { configureWeb3 } from '../utils/web3'
@@ -22,6 +23,7 @@ function Body() {
     const [displayAlertGeneral, setDisplayAlertGeneral] = useState(false)
     const [state, setState] = useState({
         account: "",
+        qty: 1,
         isConnected: false,
         isSoldOut: false,
         hasFreeMint: false,
@@ -31,13 +33,14 @@ function Body() {
         isDisabled: false,
         isDisabledMint: false,
         isDisabledFree: false,
-        isPlusDisabled: false,
-        isMinusDisabled: false,
         showButtons: false,
         isError: false,
         maxMintPerTx: 0,
         maxNftPerAddr: 0,
+        cost: 0,
+        totalPrice: 0,
         totalSupply: 0,
+        maxSupply: 999,
         txHash: "",
         lastTokenId: 0,
         outputMsg: "",
@@ -61,6 +64,24 @@ function Body() {
     const handleShowAlertGeneral = () => setDisplayAlertGeneral(true);
 
     // functions
+    const quantityChangeFn = sym => {
+        const qty = state.qty
+        
+        if (sym === '+') {
+            if (qty + 1 <= state.maxMintPerTx) {
+                _setState("qty", qty + 1)
+                const price = (qty + 1) * state.cost
+                _setState("totalPrice", price)
+            }
+        } else {
+            if (qty - 1 >= 1) {
+                _setState("qty", qty - 1)
+                const price = (qty - 1) * state.cost
+                _setState("totalPrice", price)
+            }
+        }
+    }
+
     const _connect = async () => {
         _setState("isLoading", true)
         _setState("isDisabled", true)
@@ -108,9 +129,19 @@ function Body() {
 
         const nftAddressLimit = await cont.methods.nftPerAddressLimit().call()
         _setState("maxNftPerAddr", nftAddressLimit)
+        
+        const priceMint = await cont.methods.cost().call()
+        _setState("cost", w3.utils.fromWei(priceMint.toString(), "ether"))
 
         const totalSupply = await cont.methods.totalSupply().call()
         _setState("totalSupply", totalSupply)
+
+        if (totalSupply === state.maxSupply) {
+            _setState("isSoldOut", true)
+            _setState("isError", false)
+            _setState("outputMsg", "All 999 Bear With Us NFTs are minted! Thank you for your support.")
+            handleShowAlertGeneral()
+        }
 
         _setState("isLoading", false)
         _setState("isDisabled", false)
@@ -163,6 +194,7 @@ function Body() {
                                 <div className="w-[260px] mx-auto -mt-[52px]">
                                     <img src={logo} alt="Bear With Us Logo" className="w-full" />
                                 </div>
+
                                 {/* alert */}
                                 {displayAlertGeneral && (
                                     <div className={`mb-3 ${state.isError ? "alert-error" : "alert-success"}`}>
@@ -172,27 +204,10 @@ function Body() {
                                                 <FontAwesomeIcon icon={faTimes} />
                                             </button>
                                         </div>
-                                        {state.showButtons && (
-                                            <div className="flex justify-start gap-3 mt-1">
-                                                <a href={explorerUrl + state.txHash}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="teenage text-white underline hover:text-color-orange"
-                                                >
-                                                    View on EtherScan
-                                                </a>
-                                                <a href={openSeaUrl + bwuAddress + "/" + state.lastTokenId}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="teenage text-white underline hover:text-color-orange"
-                                                >
-                                                    View on OpenSea
-                                                </a>
-                                            </div>
-                                        )}
                                     </div>
                                 )}
                                 {/* end alert */}
+
                                 <p className="text-gray-50 text-md text-center mb-5">Connect your wallet to proceed</p>
                                 
                                 <button onClick={_connect} className="btn-1 w-[250px] mx-auto rounded-full teenage on-hover on-disabled" disabled={state.isDisabled}>
@@ -237,23 +252,26 @@ function Body() {
                                     {/* end alert */}
 
                                     <div className="mb-6">
-                                        <p className="text-color-brown text-lg mb-1">Mint Price: 0.003 ETH*</p>
-                                        <p className="text-color-orange text-sm">100/999 Minted!</p>
+                                        <p className="text-color-brown text-lg mb-1">Mint Price: {state.cost} ETH*</p>
+                                        <p className="text-color-orange text-sm">{state.totalSupply}/{state.maxSupply} Minted!</p>
                                     </div>
                                     <div className="mb-3">
-                                        <p className="teenage text-color-brown text-[20px]">Max. mint per transaction: 3</p>
-                                        <p className="teenage text-color-brown text-[20px]">NFT Limit per Address: 9</p>
+                                        <p className="teenage text-color-brown text-[20px]">Max. mint per transaction: {state.maxMintPerTx}</p>
+                                        <p className="teenage text-color-brown text-[20px]">NFT Limit per Address: {state.maxNftPerAddr}</p>
                                     </div>
                                     <div className="flex justify-center items-center mb-3 gap-2">
-                                        <button className="w-14 btn-1 rounded-md on-hover on-disabled" disabled={state.isMinusDisabled || state.isDisabled}>-</button>
-                                        <div id="qtyToMint" className="border-2 border-[#6a3722] grow text-[25px] py-1 px-3 rounded-md">1</div>
-                                        <button className="w-14 btn-1 rounded-md on-hover on-disabled" disabled={state.isPlusDisabled || state.isDisabled}>+</button>
+                                        <button onClick={() => quantityChangeFn("-")} className="w-14 btn-1 rounded-md on-hover on-disabled" disabled={state.isDisabled || state.isSoldOut}>-</button>
+                                        <div id="qtyToMint" className="border-2 border-[#6a3722] grow text-[25px] py-1 px-3 rounded-md">{state.qty}</div>
+                                        <button onClick={() => quantityChangeFn("+")} className="w-14 btn-1 rounded-md on-hover on-disabled" disabled={state.isDisabled || state.isSoldOut}>+</button>
+                                    </div>
+                                    <div className="mb-3">
+                                        <p className="text-color-brown text-sm">TOTAL: {numberFormat(state.totalPrice, 3)} ETH</p>
                                     </div>
                                     <div className="flex gap-3">
-                                        <button className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={state.isDisabledMint}>
+                                        <button className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={state.isDisabledMint || state.isSoldOut}>
                                             {state.isLoadingMint ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "MINT NOW!"}
                                         </button>
-                                        <button className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={!state.hasFreeMint || state.isDisabledFree}>
+                                        <button className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={!state.hasFreeMint || state.isDisabledFree || state.isSoldOut}>
                                             {state.isLoadingFree ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "MINT FREE NFT"}
                                         </button>
                                     </div>
