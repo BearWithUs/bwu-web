@@ -24,6 +24,7 @@ function Body() {
     const [state, setState] = useState({
         account: "",
         qty: 1,
+        ownedNFTs: 0,
         isConnected: false,
         isSoldOut: false,
         hasFreeMint: false,
@@ -68,18 +69,35 @@ function Body() {
         const qty = state.qty
         
         if (sym === '+') {
-            if (qty + 1 <= state.maxMintPerTx) {
+            // if (qty + 1 <= state.maxMintPerTx) {
                 _setState("qty", qty + 1)
                 const price = (qty + 1) * state.cost
                 _setState("totalPrice", price)
-            }
+            // }
         } else {
-            if (qty - 1 >= 1) {
+            // if (qty - 1 >= 1) {
                 _setState("qty", qty - 1)
                 const price = (qty - 1) * state.cost
                 _setState("totalPrice", price)
+            // }
+        }
+    }
+
+    const mintBwu = async () => {
+        if (!state.isSoldOut) {
+            if (Number(state.totalSupply) + state.qty <= Number(state.maxSupply)) {
+                console.log(state.ownedNFTs)
+            } else {
+                const remaining = Number(state.maxSupply) - Number(state.totalSupply)
+                showAlert(true, `The quantity you want to mint exceeds the number of BWU NFTs left (${remaining} NFTs left). Please try a different value.`)
             }
         }
+    }
+
+    const showAlert = (isErr, output) => {
+        _setState("isError", isErr)
+        _setState("outputMsg", output)
+        handleShowAlertGeneral()
     }
 
     const _connect = async () => {
@@ -98,15 +116,13 @@ function Body() {
                 _init(web3, contract, userAcct)
                 _setState("account", userAcct)
             } else {
-                _setState("outputMsg", "You do not have a connected wallet address. Please try again.")
-                handleShowAlertGeneral()
+                showAlert(true, "You do not have a connected wallet address. Please try again.")
                 _setState("isLoading", false)
                 _setState("isDisabled", false)
             }
         } else {
-            _setState("isError", true);
-            (isMobile) ? _setState("outputMsg", "Please use the in-app browser of MetaMask app on your device to mint.") : _setState("outputMsg", "No MetaMask detected. Please install Metamask extension on your browser to proceed.")
-            handleShowAlertGeneral()
+            const msg = (isMobile) ? "Please use the in-app browser of MetaMask app on your device to mint." : "No MetaMask detected. Please install Metamask extension on your browser to proceed."
+            showAlert(true, msg)
 
             _setState("isLoading", false)
             _setState("isDisabled", false)
@@ -118,9 +134,7 @@ function Body() {
         const checkFreeMint = await cont.methods.isFreeMint(acct).call()
         if (checkFreeMint) {
             _setState("hasFreeMint", true)
-            _setState("isError", false)
-            _setState("outputMsg", "Congratulations! You have a FREE BWU NFT MINT! Please click the \"MINT FREE NFT\" button below")
-            handleShowAlertGeneral()
+            showAlert(false, "Congratulations! You have a FREE BWU NFT MINT! Please click the \"MINT FREE NFT\" button below")
         }
 
         // get the details for the mint
@@ -132,15 +146,17 @@ function Body() {
         
         const priceMint = await cont.methods.cost().call()
         _setState("cost", w3.utils.fromWei(priceMint.toString(), "ether"))
+        _setState("totalPrice", w3.utils.fromWei(priceMint.toString(), "ether"))
 
         const totalSupply = await cont.methods.totalSupply().call()
         _setState("totalSupply", totalSupply)
 
+        const ownedNFTs = await cont.methods.balanceOf(acct).call()
+        _setState("ownedNFTs", ownedNFTs)
+
         if (totalSupply === state.maxSupply) {
             _setState("isSoldOut", true)
-            _setState("isError", false)
-            _setState("outputMsg", "All 999 Bear With Us NFTs are minted! Thank you for your support.")
-            handleShowAlertGeneral()
+            showAlert(false, "All 999 Bear With Us NFTs are minted! Thank you for your support.")
         }
 
         _setState("isLoading", false)
@@ -268,7 +284,7 @@ function Body() {
                                         <p className="text-color-brown text-sm">TOTAL: {numberFormat(state.totalPrice, 3)} ETH</p>
                                     </div>
                                     <div className="flex gap-3">
-                                        <button className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={state.isDisabledMint || state.isSoldOut}>
+                                        <button onClick={mintBwu} className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={state.isDisabledMint || state.isSoldOut}>
                                             {state.isLoadingMint ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "MINT NOW!"}
                                         </button>
                                         <button className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={!state.hasFreeMint || state.isDisabledFree || state.isSoldOut}>
