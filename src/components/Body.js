@@ -61,7 +61,7 @@ function Body() {
     }
 
     // alerts
-    const handleHideShowAlertGeneral = () => setDisplayAlertGeneral(false);
+    const handleHideAlertGeneral = () => setDisplayAlertGeneral(false);
     const handleShowAlertGeneral = () => setDisplayAlertGeneral(true);
 
     // functions
@@ -69,29 +69,88 @@ function Body() {
         const qty = state.qty
         
         if (sym === '+') {
-            // if (qty + 1 <= state.maxMintPerTx) {
+            if (qty + 1 <= state.maxMintPerTx) {
                 _setState("qty", qty + 1)
                 const price = (qty + 1) * state.cost
                 _setState("totalPrice", price)
-            // }
+            }
         } else {
-            // if (qty - 1 >= 1) {
+            if (qty - 1 >= 1) {
                 _setState("qty", qty - 1)
                 const price = (qty - 1) * state.cost
                 _setState("totalPrice", price)
-            // }
+            }
         }
     }
 
-    const mintBwu = async () => {
+    const checkStates = async type => {
         if (!state.isSoldOut) {
+            // check if qty + total supply exceeds the maxSupply
             if (Number(state.totalSupply) + state.qty <= Number(state.maxSupply)) {
-                console.log(state.ownedNFTs)
+                // check owned NFTs if exceeds maxNFTPerAddr
+                if (Number(state.ownedNFTs) + state.qty <= state.maxNftPerAddr) {
+                    // check type; 1-mint; 2-freemint
+                    if (type === 1) {
+                        // check if the balance of the user is sufficient to mint
+                        const userBalance = await web3.eth.getBalance(state.account)
+
+                        // MINT PROPER
+                        if (userBalance >= state.totalPrice) mintBwu()
+                        else showAlert(true, "You don't have enough ETH balance to proceed with the mint.")
+                    } else mintFreeBwu()
+                } else {
+                    showAlert(true, `The quantity you want to mint exceeds the number of BWU NFTs allowed per address (you currently have ${state.ownedNFTs}).`)
+                }
             } else {
                 const remaining = Number(state.maxSupply) - Number(state.totalSupply)
                 showAlert(true, `The quantity you want to mint exceeds the number of BWU NFTs left (${remaining} NFTs left). Please try a different value.`)
             }
         }
+    }
+
+    const mintBwu = async () => {
+        _setState("showButtons", false)
+        handleHideAlertGeneral()
+
+        const totalPrice = web3.utils.toWei(state.totalPrice.toString())
+
+        await contract.methods.mint(state.qty).send({
+            from: state.account,
+            value: totalPrice,
+        })
+            .on('transactionHash', function (hash) {
+                _setState("isDisabled", true)
+                _setState("isDisabledMint", true)
+                _setState("isLoadingMint", true)
+            })
+            .on('error', function (error) {
+                _setState("isDisabled", false)
+                _setState("isDisabledMint", false)
+                _setState("isLoadingMint", false)
+                showAlert(true, error.message)
+            })
+            .then(async function (receipt) {
+                _setState("isDisabled", false)
+                _setState("isDisabledMint", false)
+                _setState("isLoadingMint", false)
+                _setState("txHash", receipt.transactionHash)
+
+                showAlert(false, "Your BWU NFT/s are successfully minted!")
+                _setState("showButtons", true)
+
+                if (state.qty > 1) _setState("lastTokenId", receipt.events.Transfer['0'].returnValues.tokenId)
+                else _setState("lastTokenId", receipt.events.Transfer.returnValues.tokenId)
+                
+                _setState("qty", 1)
+                _setState("totalPrice", 0)
+
+                // reload data
+                _init(web3, contract, state.account)
+            })
+    }
+
+    const mintFreeBwu = async () => {
+
     }
 
     const showAlert = (isErr, output) => {
@@ -130,14 +189,10 @@ function Body() {
     }
 
     const _init = async (w3, cont, acct) => {
-        // check if the account has free mint
-        const checkFreeMint = await cont.methods.isFreeMint(acct).call()
-        if (checkFreeMint) {
-            _setState("hasFreeMint", true)
-            showAlert(false, "Congratulations! You have a FREE BWU NFT MINT! Please click the \"MINT FREE NFT\" button below")
-        }
-
         // get the details for the mint
+        const maxSupply = await cont.methods.maxSupply().call()
+        _setState("maxSupply", maxSupply)
+
         const maxMintQty = await cont.methods.maxMintQuantity().call()
         _setState("maxMintPerTx", maxMintQty)
 
@@ -154,14 +209,24 @@ function Body() {
         const ownedNFTs = await cont.methods.balanceOf(acct).call()
         _setState("ownedNFTs", ownedNFTs)
 
-        if (totalSupply === state.maxSupply) {
-            _setState("isSoldOut", true)
-            showAlert(false, "All 999 Bear With Us NFTs are minted! Thank you for your support.")
-        }
+        _setState("isConnected", true)
 
+        // initialize variables
         _setState("isLoading", false)
         _setState("isDisabled", false)
-        _setState("isConnected", true)
+        _setState("qty", 1)
+
+        // check if the account has free mint
+        const checkFreeMint = await cont.methods.isFreeMint(acct).call()
+        if (checkFreeMint) {
+            _setState("hasFreeMint", true)
+            showAlert(false, "Congratulations! You have a FREE BWU NFT MINT! Please click the \"MINT FREE NFT\" button below")
+        }
+
+        if (totalSupply === maxSupply) {
+            _setState("isSoldOut", true)
+            showAlert(false, `All ${maxSupply} Bear With Us NFTs are minted! Thank you for your support.`)
+        }
     }
 
     return (
@@ -216,7 +281,7 @@ function Body() {
                                     <div className={`mb-3 ${state.isError ? "alert-error" : "alert-success"}`}>
                                         <div className="flex justify-between items-start gap-4">
                                             <p className="teenage text-lg leading-5 text-white">{state.outputMsg}</p>
-                                            <button onClick={handleHideShowAlertGeneral} className="teenage text-white">
+                                            <button onClick={handleHideAlertGeneral} className="teenage text-white">
                                                 <FontAwesomeIcon icon={faTimes} />
                                             </button>
                                         </div>
@@ -241,7 +306,7 @@ function Body() {
                                         <div className={`mb-3 ${state.isError ? "alert-error" : "alert-success"}`}>
                                             <div className="flex justify-between items-start gap-4">
                                                 <p className="teenage text-lg leading-5 text-white">{state.outputMsg}</p>
-                                                <button onClick={handleHideShowAlertGeneral} className="teenage text-white">
+                                                <button onClick={handleHideAlertGeneral} className="teenage text-white">
                                                     <FontAwesomeIcon icon={faTimes} />
                                                 </button>
                                             </div>
@@ -284,10 +349,10 @@ function Body() {
                                         <p className="text-color-brown text-sm">TOTAL: {numberFormat(state.totalPrice, 3)} ETH</p>
                                     </div>
                                     <div className="flex gap-3">
-                                        <button onClick={mintBwu} className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={state.isDisabledMint || state.isSoldOut}>
+                                        <button onClick={() => checkStates(1)} className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={state.isDisabledMint || state.isSoldOut}>
                                             {state.isLoadingMint ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "MINT NOW!"}
                                         </button>
-                                        <button className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={!state.hasFreeMint || state.isDisabledFree || state.isSoldOut}>
+                                        <button onClick={() => checkStates(2)} className="btn-1 w-[220px] mx-auto rounded-md teenage on-hover on-disabled mb-3" disabled={!state.hasFreeMint || state.isDisabledFree || state.isSoldOut}>
                                             {state.isLoadingFree ? <FontAwesomeIcon icon={faSpinner} color="white" spin /> : "MINT FREE NFT"}
                                         </button>
                                     </div>
