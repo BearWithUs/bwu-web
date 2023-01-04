@@ -150,7 +150,39 @@ function Body() {
     }
 
     const mintFreeBwu = async () => {
+        _setState("showButtons", false)
+        handleHideAlertGeneral()
 
+        await contract.methods.freeMint().send({
+            from: state.account
+        })
+            .on('transactionHash', function (hash) {
+                _setState("isDisabled", true)
+                _setState("isDisabledFree", true)
+                _setState("isLoadingFree", true)
+            })
+            .on('error', function (error) {
+                _setState("isDisabled", true)
+                _setState("isDisabledFree", true)
+                _setState("isLoadingFree", true)
+                showAlert(true, error.message)
+            })
+            .then(async function (receipt) {
+                _setState("isDisabled", false)
+                _setState("isDisabledFree", false)
+                _setState("isLoadingFree", false)
+                _setState("hasFreeMint", false)
+                _setState("txHash", receipt.transactionHash)
+
+                showAlert(false, "Your FREE BWU NFT is successfully minted!")
+                _setState("showButtons", true)
+
+                if (state.qty > 1) _setState("lastTokenId", receipt.events.Transfer['0'].returnValues.tokenId)
+                else _setState("lastTokenId", receipt.events.Transfer.returnValues.tokenId)
+
+                // reload data
+                _init(web3, contract, state.account)
+            })
     }
 
     const showAlert = (isErr, output) => {
